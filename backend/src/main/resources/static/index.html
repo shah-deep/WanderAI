@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket STOMP Test</title>
+    <!--
+        You'll need SockJS and STOMP.js.
+        Using CDNs here for simplicity.
+        In a Spring Boot project with WebJars, you might serve these from your app.
+        Your pom.xml had webjars commented out, so using CDNs.
+    -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #controls button { margin-right: 10px; padding: 8px 15px; }
+        #chatLog {
+            width: 90%;
+            height: 300px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #f9f9f9;
+        }
+        #messageInput { width: 70%; padding: 8px; margin-right: 10px; }
+        .message { margin-bottom: 5px; padding: 5px; border-radius: 4px; }
+        .user { background-color: #e1f5fe; text-align: right; margin-left: 20%;}
+        .ai { background-color: #f0f4c3; text-align: left; margin-right: 20%;}
+        .status { font-style: italic; color: #777; }
+    </style>
+</head>
+<body>
+
+<h1>WebSocket Chat Test</h1>
+
+<div id="controls">
+    <button id="connectButton">Connect</button>
+    <button id="disconnectButton" disabled>Disconnect</button>
+    <span id="status">Status: Not Connected</span>
+</div>
+
+<div id="chatArea" style="margin-top: 20px;">
+    <input type="text" id="messageInput" placeholder="Enter your message..." disabled/>
+    <button id="sendMessageButton" disabled>Send Message</button>
+</div>
+
+<h3>Chat Log:</h3>
+<div id="chatLog"></div>
+
+<script>
+    const connectButton = document.getElementById('connectButton');
+    const disconnectButton = document.getElementById('disconnectButton');
+    const sendMessageButton = document.getElementById('sendMessageButton');
+    const messageInput = document.getElementById('messageInput');
+    const chatLog = document.getElementById('chatLog');
+    const statusDisplay = document.getElementById('status');
+
+    let stompClient = null;
+    let sessionId = null;
+    const serverUrl = 'http://localhost:8080/ws-chat'; // Your WebSocket endpoint (SockJS will add ws://)
+
+    function setConnected(connected) {
+        connectButton.disabled = connected;
+        disconnectButton.disabled = !connected;
+        sendMessageButton.disabled = !connected;
+        messageInput.disabled = !connected;
+        statusDisplay.textContent = connected ? "Status: Connected" : "Status: Disconnected";
+        if (!connected) {
+            chatLog.innerHTML = ''; // Clear chat on disconnect
+        }
+    }
+
+    function connect() {
+        // SockJS will try WebSocket first, then fall back if needed.
+        // Your WebSocketConfig uses .withSockJS()
+        const socket = new SockJS(serverUrl);
+        stompClient = Stomp.over(socket);
+
+        // Disable STOMP debug messages in console
+        stompClient.debug = null;
+
+        stompClient.connect({}, function (frame) {
+            setConnected(true);
+            logToChat("Connected to server.", "status");
+            console.log('Connected: ' + frame);
+            
+            // Extract session ID from the STOMP frame
+            sessionIdLs = socket._transport.url.split('/');
+            sessionId = sessionIdLs.pop();
+            if (sessionId=="websocket"){
+                sessionId = sessionIdLs.pop();
+            }
+            console.log('Session ID: ' + sessionId);
+            
+            // Subscribe to the session-specific topic
+            stompClient.subscribe('/topic/reply/' + sessionId, function (message) {
+                console.log(message);
+                console.log('Received: ' + message.body);
+                showMessageOutput(JSON.parse(message.body));
+            });
+
+        }, function(error) {
+            logToChat("Connection error: " + error, "status");
+            console.error("STOMP error: ", error);
+            setConnected(false);
+        });
+    }
+
+    function disconnect() {
+        if (stompClient !== null) {
+            stompClient.disconnect(function() {
+                logToChat("Disconnected from server.", "status");
+                console.log("Disconnected");
+            });
+        }
+        setConnected(false);
+        sessionId = null;
+    }
+
+    function sendMessage() {
+        const messageContent = messageInput.value.trim();
+        if (messageContent && stompClient) {
+            const chatMessage = {
+                content: messageContent,
+                sender: "User" // Or get username from somewhere
+            };
+            // Destination based on your ChatController: @MessageMapping("/chat.sendMessage")
+            // and application prefix: config.setApplicationDestinationPrefixes("/app");
+            stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
+            logToChat(`You: ${messageContent}`, "user"); // Display sent message immediately
+            messageInput.value = '';
+        }
+    }
+
+    function showMessageOutput(message) {
+        const sender = message.sender || "Unknown";
+        const content = message.content || "";
+        const messageClass = sender.toLowerCase() === "ai" ? "ai" : "user";
+        logToChat(`${sender}: ${content}`, messageClass);
+    }
+
+    function logToChat(text, type = 'status') { // type can be 'user', 'ai', or 'status'
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message', type);
+        messageElement.textContent = text;
+        chatLog.appendChild(messageElement);
+        chatLog.scrollTop = chatLog.scrollHeight; // Scroll to bottom
+    }
+
+    connectButton.addEventListener('click', connect);
+    disconnectButton.addEventListener('click', disconnect);
+    sendMessageButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Initial state
+    setConnected(false);
+</script>
+
+</body>
+</html>
