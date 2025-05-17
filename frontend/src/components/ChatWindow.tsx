@@ -19,7 +19,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isConnecting, awaitin
   }, [messages]);
 
   return (
-    <div className="bg-white border rounded-lg h-96 overflow-y-auto p-4 flex flex-col">
+    <div className="bg-white border rounded-lg flex-grow overflow-y-auto p-4 flex flex-col min-h-0">
       {isConnecting && (
         <div className="text-center py-4 text-gray-500 italic">
           Connecting to server...
@@ -28,7 +28,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isConnecting, awaitin
       
       {!isConnecting && messages.length === 0 && (
         <div className="text-center py-16 text-gray-500 italic flex-grow flex flex-col justify-center">
-          <p>WanderAI: Plan your next adventure with ease</p>
+          <p className="mb-2">WanderAI: Plan your next adventure with ease</p>
           <p>Send a message to start the conversation!</p>
         </div>
       )}

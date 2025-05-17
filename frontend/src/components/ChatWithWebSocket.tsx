@@ -6,7 +6,11 @@ import ChatWindow from '@/components/ChatWindow';
 import ChatInput from '@/components/ChatInput';
 import ConnectionStatus from '@/components/ConnectionStatus';
 
-export default function ChatWithWebSocket() {
+interface ChatWithWebSocketProps {
+  onMessagesChange?: (messages: any[]) => void;
+}
+
+export default function ChatWithWebSocket({ onMessagesChange }: ChatWithWebSocketProps) {
   const {
     connected,
     connecting,
@@ -14,6 +18,11 @@ export default function ChatWithWebSocket() {
     sendMessage,
     awaitingResponse
   } = useWebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:8080/ws-chat');
+
+  // Notify parent of messages changes
+  React.useEffect(() => {
+    onMessagesChange?.(messages);
+  }, [messages, onMessagesChange]);
 
   // Input should be disabled when connecting, disconnected, or awaiting response
   const inputDisabled = !connected || connecting || awaitingResponse;
@@ -35,7 +44,6 @@ export default function ChatWithWebSocket() {
         onSendMessage={sendMessage} 
         disabled={inputDisabled} 
       />
-      
     </>
   );
 }
