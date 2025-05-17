@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { ChatMessage } from '@/hooks/useWebSocket';
 import ChatMessageComponent from './ChatMessage';
-import LoadingIndicator from './LoadingIndicator';
 
 interface ChatWindowProps {
   messages: ChatMessage[];
@@ -29,7 +28,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isConnecting, awaitin
       
       {!isConnecting && messages.length === 0 && (
         <div className="text-center py-16 text-gray-500 italic flex-grow flex flex-col justify-center">
-          <p>No messages yet.</p>
+          <p>WanderAI: Plan your next adventure with ease</p>
           <p>Send a message to start the conversation!</p>
         </div>
       )}
@@ -37,12 +36,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isConnecting, awaitin
       {messages.map((message, index) => (
         <ChatMessageComponent key={index} message={message} />
       ))}
-      
-      {awaitingResponse && (
-        <div className="ml-4 mt-2">
-          <LoadingIndicator />
-        </div>
-      )}
       
       <div ref={messagesEndRef} />
     </div>

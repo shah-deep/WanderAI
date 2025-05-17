@@ -25,6 +25,9 @@ public class DetailsAgent implements NodeAction<ChatState> {
     @Value( "${llm.api-key.gemini}")
     private String llmApiKey;
 
+    @Value( "${llm.model-name.gemini}")
+    private String llmModel;
+
     private DetailsAssistant service;
 
     @PostConstruct
@@ -35,7 +38,7 @@ public class DetailsAgent implements NodeAction<ChatState> {
     public DetailsAssistant build() {
         ChatModel llm = GoogleAiGeminiChatModel.builder()
                 .apiKey(llmApiKey)
-                .modelName("gemini-1.5-flash")
+                .modelName(llmModel)
                 .temperature(0.0) // Adjust as needed
                 .build();
 

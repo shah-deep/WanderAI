@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import LoadingIndicator from './LoadingIndicator';
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -18,16 +19,23 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled }) => {
 
   return (
     <form onSubmit={handleSubmit} className="mt-4 flex">
-      <input
-        type="text"
-        className={`flex-grow px-4 py-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-          disabled ? 'bg-gray-100 text-gray-500' : 'bg-white'
-        }`}
-        placeholder={disabled ? "Waiting for response..." : "Type your message..."}
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        disabled={disabled}
-      />
+      <div className="flex-grow relative">
+        <input
+          type="text"
+          className={`w-full px-4 py-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            disabled ? 'bg-gray-100 text-gray-500' : 'bg-white'
+          }`}
+          placeholder={disabled ? "Waiting for response..." : "Type your message..."}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          disabled={disabled}
+        />
+        {disabled && (
+          <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+            <LoadingIndicator />
+          </div>
+        )}
+      </div>
       <button
         type="submit"
         className={`px-4 py-2 rounded-r-lg font-medium ${

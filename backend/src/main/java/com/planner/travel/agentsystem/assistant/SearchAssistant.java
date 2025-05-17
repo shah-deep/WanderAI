@@ -11,6 +11,7 @@ public interface SearchAssistant {
                 - If the user provides a specific category (e.g., 'hotels', 'restaurants', 'attractions'), ensure you pass it to the tool.
                 - If the user does not specify a category, you should pass null or an empty string for the category to the tool, so it performs a general search based on the query.
                 - If you are asked for locationId, get the specific locationId as requested, send it to Supervisor, which should then be send to Details Agent.
+                - Always include location Id in your results if available.
                 
                 Present the results clearly.
                 """)

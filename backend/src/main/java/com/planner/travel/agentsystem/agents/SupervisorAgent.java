@@ -28,6 +28,9 @@ public class SupervisorAgent implements NodeAction<ChatState> {
     @Value("${llm.api-key.gemini}")
     private String llmApiKey;
 
+    @Value( "${llm.model-name.gemini}")
+    private String llmModel;
+
     private SupervisorAssistant service;
 
     @PostConstruct
@@ -49,7 +52,7 @@ public class SupervisorAgent implements NodeAction<ChatState> {
         // 3. Configure the ChatModel (Gemini)
         ChatModel llm = GoogleAiGeminiChatModel.builder()
                 .apiKey(llmApiKey)
-                .modelName("gemini-1.5-flash") // Or your preferred Gemini responseformat
+                .modelName(llmModel) // Or your preferred Gemini response format
                 .temperature(0.0) // Lower temperature for more deterministic routing
                 .responseFormat(responseFormat) // Crucial step to enforce structured output
                 .build();
