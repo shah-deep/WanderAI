@@ -48,9 +48,10 @@ public class LocationSearchTool {
 
             return parseSearchResults(response.getBody());
         } catch (Exception e) {
-            log.error("Error searching for locations with query '{}' and category '{}'", searchQuery, category, e);
-            return Collections.emptyList();
-        }
+    log.error("Error searching for locations with query '{}' and category '{}': {}", 
+        searchQuery, category, e.getMessage(), e);
+    return Collections.emptyList();
+}
     }
 
     private List<SearchResult> parseSearchResults(String jsonResponse) {

@@ -1,0 +1,46 @@
+package com.planner.travel.util;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class ErrorHandler {
+
+    /**
+     * Transforms any exception into a user-friendly message while logging the full error details
+     * 
+     * @param e The exception that occurred
+     * @param contextMessage Additional context about where the error occurred
+     * @return A user-friendly error message
+     */
+    public static String getUserFriendlyErrorMessage(Exception e, String contextMessage) {
+        // Log the full exception with stack trace for debugging
+        log.error("{}: {}", contextMessage, e.getMessage(), e);
+        
+        // Return a generic message to the user
+        return "Sorry, we encountered a problem processing your request. Our team has been notified.";
+    }
+    
+    /**
+     * Provides more specific error messages for common error types without exposing implementation details
+     */
+    public static String getUserFriendlyErrorMessage(Exception e, String contextMessage, boolean provideMoreDetails) {
+        // Log the full exception with stack trace for debugging
+        log.error("{}: {}", contextMessage, e.getMessage(), e);
+        
+        if (!provideMoreDetails) {
+            return "Sorry, we encountered a problem processing your request. Our team has been notified.";
+        }
+        
+        // Provide slightly more specific messages based on exception type
+        if (e instanceof NullPointerException) {
+            return "Sorry, we couldn't process your request due to missing information.";
+        } else if (e instanceof IllegalArgumentException) {
+            return "Sorry, one of the values you provided isn't valid for this operation.";
+        } else if (e.getCause() != null && e.getCause() instanceof java.net.ConnectException) {
+            return "Sorry, we're having trouble connecting to one of our services. Please try again later.";
+        }
+        
+        // Default generic message
+        return "Sorry, we encountered a problem processing your request. Our team has been notified.";
+    }
+}

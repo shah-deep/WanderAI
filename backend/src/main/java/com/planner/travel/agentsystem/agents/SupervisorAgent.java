@@ -20,9 +20,11 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct; // Import PostConstruct
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SupervisorAgent implements NodeAction<ChatState> {
 
     @Value("${llm.api-key.gemini}")
@@ -69,21 +71,45 @@ public class SupervisorAgent implements NodeAction<ChatState> {
 
     @Override
     public Map<String, Object> apply(ChatState state) throws Exception {
-        List<ChatMessage> history = state.messages();
+        try {
+            List<ChatMessage> history = state.messages();
 
-        System.out.println("SupervisorAgent got input: " + history.getLast());
+            System.out.println("SupervisorAgent got input: " +
+                (history.getLast() != null ? history.getLast() : "null message"));
 
-        // Get supervisor decision and instructions
-        SupervisorOutput result = service.query(history);
+            // Get supervisor decision and instructions
+            SupervisorOutput result = service.query(history);
 
-        System.out.println("SupervisorAgent got output: " + result);
+            if (result == null) {
+                throw new RuntimeException("Failed to get response from supervisor");
+            }
 
-        // Create a message from supervisor's instructions
-        AiMessage supervisorMessage = AiMessage.from(result.getValue());
+            System.out.println("SupervisorAgent got output: " + result);
 
-        return Map.of(
-                "next", result.getNext(),
-                "messages", state.withMessage(supervisorMessage).messages()
-        );
+            // Create a message from supervisor's instructions
+            String supervisorValue = result.getValue();
+            if (supervisorValue == null) {
+                supervisorValue = "I couldn't process that request. Could you please try again?";
+            }
+
+            AiMessage supervisorMessage = AiMessage.from(supervisorValue);
+
+            String next = result.getNext() != null ? result.getNext() : "User";
+
+            return Map.of(
+                    "next", next,
+                    "messages", state.withMessage(supervisorMessage).messages()
+            );
+        } catch (Exception e) {
+            log.error("Error in SupervisorAgent: {}", e.getMessage(), e);
+            // Return a fallback response instead of allowing exception to propagate
+            AiMessage errorMessage = AiMessage.from(
+                "I'm having trouble processing your request right now. Could you try again?"
+            );
+            return Map.of(
+                    "next", "User",
+                    "messages", state.withMessage(errorMessage).messages()
+            );
+        }
     }
 }

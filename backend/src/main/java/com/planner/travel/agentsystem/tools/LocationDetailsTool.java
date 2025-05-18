@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.planner.travel.agentsystem.state.LocationDetails;
 import com.planner.travel.client.TripAdvisorClient;
+import com.planner.travel.util.ErrorHandler;
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool; // Added import for @Tool
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,9 @@ public class LocationDetailsTool {
             return parseLocationDetails(response.getBody());
         } catch (Exception e) {
             log.error("Error getting location details for locationId {}: {}", locationId, e.getMessage(), e);
-            return null;
+            throw new RuntimeException(
+                ErrorHandler.getUserFriendlyErrorMessage(e, "Error retrieving location details")
+            );
         }
     }
 

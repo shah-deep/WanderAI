@@ -3,6 +3,7 @@ package com.planner.travel.controller;
 import com.planner.travel.agentsystem.TravelPlannerWorkflow;
 import com.planner.travel.agentsystem.state.ChatState;
 import com.planner.travel.dto.ChatMessageDto;
+import com.planner.travel.util.ErrorHandler;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
@@ -109,7 +110,10 @@ public class ChatController {
 
         } catch (Exception e) {
             logger.error("Error processing message for session {}: {}", sessionId, e.getMessage(), e);
-            ChatMessageDto errorDto = new ChatMessageDto("Sorry, an error occurred: " + e.getMessage(), "AI");
+            ChatMessageDto errorDto = new ChatMessageDto(
+                ErrorHandler.getUserFriendlyErrorMessage(e, "Error processing chat message"),
+                "AI"
+            );
             messagingTemplate.convertAndSend("/topic/reply/" + sessionId, errorDto);
         }
     }

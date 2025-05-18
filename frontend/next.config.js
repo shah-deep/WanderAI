@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',  // Enable static exports
+  basePath: '/trip-planner', // Replace with your repo name
+  images: {
+    unoptimized: true,
+  },
   webpack: (config, { isServer }) => {
     // Only apply this on the client side
     if (!isServer) {
@@ -7,11 +12,6 @@ const nextConfig = {
         ...config.resolve.fallback,
         fs: false,  // Provides an empty module for fs
         path: false,
-        // net: false, // Provides an empty module for net
-        // tls: false, // Provides an empty module for tls
-        // dns: false, // Provides an empty module for dns
-        // "utf-8-validate": false,
-        // "bufferutil": false,
       };
     }
     return config;
