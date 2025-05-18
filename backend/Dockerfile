@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Argument for the JAR file name (makes it easier to update if version changes)
 # Your pom.xml produces: trip-planner-backend-0.0.1-SNAPSHOT.jar
-ARG JAR_FILE=target/jar/travel.jar
+ARG JAR_FILE=out/artifacts/travel_jar/travel.jar
 
 # Copy the executable JAR from the target folder to our /app directory
 COPY ${JAR_FILE} app.jar
