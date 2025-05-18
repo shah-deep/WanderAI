@@ -1,6 +1,6 @@
 # Use an official OpenJDK runtime as a parent image
 # Make sure to use a Java version compatible with your project (Java 21 as per your pom.xml)
-FROM eclipse-temurin:21-jdk-jammy AS build
+FROM eclipse-temurin:21-jdk-jammy
 
 # Set a working directory
 WORKDIR /app
