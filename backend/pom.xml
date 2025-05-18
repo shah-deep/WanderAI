@@ -8,8 +8,8 @@
 		<version>3.4.5</version>
 		<relativePath/>
 	</parent>
-	<groupId>com.planner</groupId>
-	<artifactId>travel</artifactId>
+	<groupId>com.planner.travel</groupId>
+	<artifactId>backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>trip-planner-backend</name>
 	<description>Travel Planner App</description>
