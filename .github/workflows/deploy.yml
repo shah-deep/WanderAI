@@ -17,6 +17,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v3
       
@@ -26,17 +29,15 @@ jobs:
           node-version: "18"
           
       - name: Install Dependencies
-        working-directory: ./frontend
         run: npm install
         
       - name: Build
-        working-directory: ./frontend
         run: npm run build
         
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
-          path: ./frontend/out
+          path: frontend/out
 
   deploy:
     environment:
