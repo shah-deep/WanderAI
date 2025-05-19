@@ -55,6 +55,7 @@ jobs:
         env:
           NEXT_PUBLIC_WEBSOCKET_URL: ${{ secrets.WEBSOCKET_URL }}
           NEXT_PUBLIC_BASE_PATH: '/trip-planner'
+          NEXT_PUBLIC_USE_WSSL: 'true'
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

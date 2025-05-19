@@ -34,8 +34,17 @@ export const useWebSocket = (serverUrl: string): UseWebSocketReturn => {
     const initializeClient = () => {
       setConnecting(true);
       
+      // Determine if we should use secure WebSocket
+      const useSecureWs = process.env.NEXT_PUBLIC_USE_WSS === 'true' || 
+                         (typeof window !== 'undefined' && window.location.protocol === 'https:');
+      
+      // Modify URL to use appropriate protocol
+      const wsUrl = useSecureWs 
+        ? serverUrl.replace('http://', 'https://').replace('ws://', 'wss://')
+        : serverUrl;
+      
       // Create a new STOMP client over SockJS
-      const socket = new SockJS(serverUrl);
+      const socket = new SockJS(wsUrl);
       const newClient = new Client({
         webSocketFactory: () => socket,
         debug: (str) => {
