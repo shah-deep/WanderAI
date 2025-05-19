@@ -18,6 +18,12 @@ interface UseWebSocketReturn {
 }
 
 export const useWebSocket = (serverUrl: string): UseWebSocketReturn => {
+  // Add debug logging
+  console.log('WebSocket Environment:', {
+    NEXT_PUBLIC_WEBSOCKET_URL: process.env.NEXT_PUBLIC_WEBSOCKET_URL,
+    serverUrl
+  });
+
   const [client, setClient] = useState<Client | null>(null);
   const [connected, setConnected] = useState<boolean>(false);
   const [connecting, setConnecting] = useState<boolean>(false);
