@@ -52,6 +52,8 @@ jobs:
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
       - name: Build with Next.js
         working-directory: frontend
+        env:
+          NEXT_PUBLIC_WEBSOCKET_URL: ${{ secrets.WEBSOCKET_URL }}
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
