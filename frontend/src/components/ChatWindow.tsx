@@ -22,7 +22,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isConnecting, awaitin
     <div className="bg-white border rounded-lg flex-grow overflow-y-auto p-4 flex flex-col min-h-0">
       {isConnecting && (
         <div className="text-center py-4 text-gray-500 italic">
-          Connecting to server...
+          <p>Connecting to server...</p>
+          <p>In case of prolonged connecting, please reload the page.</p>
         </div>
       )}
       

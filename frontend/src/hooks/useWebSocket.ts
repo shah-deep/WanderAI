@@ -49,15 +49,24 @@ export const useWebSocket = (serverUrl: string): UseWebSocketReturn => {
           setConnected(true);
           setConnecting(false);
           
+          // console.log(socket);
+          
+
           // Extract session ID from the socket URL (format: ws://host/ws-chat/470/yzw5r3mp/websocket)
-          const socketUrl = socket._transport.url;
-          console.log('Socket URL:', socketUrl);
-          
-          const urlParts = socketUrl.split('/');
-          const extractedSessionId = urlParts[urlParts.length - 2];
-          console.log('Extracted session ID:', extractedSessionId);
-          
-          setSessionId(extractedSessionId);
+          let extractedSessionId: string | null = null;
+          // _transport is not public, so check existence before accessing
+          if ((socket as any)._transport && (socket as any)._transport.url) {
+            const socketUrl = (socket as any)._transport.url;
+            // console.log('Socket URL:', socketUrl);
+
+            const urlParts = socketUrl.split('/');
+            extractedSessionId = urlParts[urlParts.length - 2];
+            // console.log('Extracted session ID:', extractedSessionId);
+
+            setSessionId(extractedSessionId);
+          } else {
+            console.warn('SockJS _transport or url not available yet.');
+          }
           
           if (extractedSessionId) {
             // Subscribe to session-specific topic

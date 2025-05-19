@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',  // Enable static exports
-  basePath: '/trip-planner', // Replace with your repo name
+  basePath: '',
   images: {
     unoptimized: true,
   },

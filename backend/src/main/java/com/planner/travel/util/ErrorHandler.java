@@ -17,21 +17,18 @@ public class ErrorHandler {
         log.error("{}: {}", contextMessage, e.getMessage(), e);
         
         // Return a generic message to the user
-        return "Sorry, we encountered a problem processing your request. Our team has been notified.";
+        return "Sorry, we encountered a problem processing your request.";
     }
-    
-    /**
-     * Provides more specific error messages for common error types without exposing implementation details
-     */
+
     public static String getUserFriendlyErrorMessage(Exception e, String contextMessage, boolean provideMoreDetails) {
         // Log the full exception with stack trace for debugging
         log.error("{}: {}", contextMessage, e.getMessage(), e);
         
         if (!provideMoreDetails) {
-            return "Sorry, we encountered a problem processing your request. Our team has been notified.";
+            return "Sorry, we encountered a problem processing your request.";
         }
         
-        // Provide slightly more specific messages based on exception type
+        // Provide slightly more specific messages based on an exception type
         if (e instanceof NullPointerException) {
             return "Sorry, we couldn't process your request due to missing information.";
         } else if (e instanceof IllegalArgumentException) {
@@ -41,6 +38,6 @@ public class ErrorHandler {
         }
         
         // Default generic message
-        return "Sorry, we encountered a problem processing your request. Our team has been notified.";
+        return "Sorry, we encountered a problem processing your request.";
     }
 }
