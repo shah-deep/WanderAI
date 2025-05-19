@@ -15,7 +15,7 @@ export default function Home() {
 
   return (
     <main className="flex flex-col items-center h-screen w-full bg-gray-50 p-4">
-      <div className="w-full max-w-[95%] md:max-w-[90%] lg:max-w-[85%] bg-white rounded-xl shadow-lg p-6 flex flex-col flex-grow">
+      <div className="w-full max-w-[95%] md:max-w-[90%] lg:max-w-[85%] bg-white rounded-xl shadow-lg p-6 flex flex-col h-[calc(100vh-2rem)]">
         <div className="flex items-center justify-center mb-4 relative">
           <h1 className="text-2xl font-bold text-gray-800">
             WanderAI
@@ -24,7 +24,9 @@ export default function Home() {
             <ExportChat messages={messages} />
           </div>
         </div>
-        <ChatWithWebSocket onMessagesChange={setMessages} />
+        <div className="flex-1 min-h-0">
+          <ChatWithWebSocket onMessagesChange={setMessages} />
+        </div>
       </div>
     </main>
   );

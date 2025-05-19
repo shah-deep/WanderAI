@@ -19,7 +19,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isConnecting, awaitin
   }, [messages]);
 
   return (
-    <div className="bg-white border rounded-lg flex-grow overflow-y-auto p-4 flex flex-col min-h-0">
+    <div className="bg-white border rounded-lg flex-1 overflow-y-auto p-4 min-h-0">
       {isConnecting && (
         <div className="text-center py-4 text-gray-500 italic">
           <p>Connecting to server...</p>

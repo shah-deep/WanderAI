@@ -28,7 +28,7 @@ export default function ChatWithWebSocket({ onMessagesChange }: ChatWithWebSocke
   const inputDisabled = !connected || connecting || awaitingResponse;
 
   return (
-    <>
+    <div className="flex flex-col h-full">
       <ConnectionStatus 
         connected={connected} 
         connecting={connecting} 
@@ -44,6 +44,6 @@ export default function ChatWithWebSocket({ onMessagesChange }: ChatWithWebSocke
         onSendMessage={sendMessage} 
         disabled={inputDisabled} 
       />
-    </>
+    </div>
   );
 }

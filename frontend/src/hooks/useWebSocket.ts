@@ -48,9 +48,9 @@ export const useWebSocket = (serverUrl: string): UseWebSocketReturn => {
       const socket = new SockJS(wsUrl);
       const newClient = new Client({
         webSocketFactory: () => socket,
-        debug: (str) => {
-          console.log(str);
-        },
+        // debug: (str) => {
+        //   console.log(str);
+        // },
         reconnectDelay: 5000,
         heartbeatIncoming: 4000,
         heartbeatOutgoing: 4000,
