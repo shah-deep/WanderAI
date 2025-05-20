@@ -11,8 +11,9 @@ WanderAI is an intelligent travel planning web application that combines the pow
 - Create travel itineraries
 - Export their travel planning conversations
 
-<!-- ![WanderAI Chat Interface](./demo_media/example1.png) -->
-<img src="./demo_media/example1.png" alt="WanderAI Chat Interface" width="600" style="max-width: 100%; height: auto;">
+<p align="center">
+  <img src="./demo_media/example1.png" alt="WanderAI Chat Interface" width="420" style="max-width: 100%; height: auto;">
+</p>
 
 ## Tech Stack
 
