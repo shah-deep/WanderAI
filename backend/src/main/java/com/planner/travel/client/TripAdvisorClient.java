@@ -9,13 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "tripadvisor", url = "${tripadvisor.api.url}")
 public interface TripAdvisorClient {
 
-    @GetMapping("/location/{locationId}/attractions")
-    ResponseEntity<String> getAttractions(
-            @PathVariable String locationId,
-            @RequestParam("key") String apiKey,
-            @RequestParam("language") String language
-    );
-
     @GetMapping("/location/search")
     ResponseEntity<String> searchLocations(
             @RequestParam("key") String apiKey,

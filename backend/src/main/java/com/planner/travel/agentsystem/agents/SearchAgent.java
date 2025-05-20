@@ -67,16 +67,17 @@ public class SearchAgent implements NodeAction<ChatState> {
         String result;
         try {
             result = service.chat(text);
+            if (result == null || result.isEmpty()) {
+                throw new Exception("Failed to get response from search assistant");
+            }
             System.out.println("SearchAgent got output: " + result);
         } catch (Exception e) {
             logger.warning("Error occurred during search: " + e.getMessage());
             
             if (e instanceof TimeoutException) {
                 result = "I'm sorry, but the search operation timed out. Please try again or refine your search query.";
-            } else if (e.getMessage() != null && e.getMessage().contains("No results found")) {
-                result = "I couldn't find any results matching your search criteria. Please try with different keywords or a broader search term.";
             } else {
-                result = "I encountered an issue while searching for locations. Please try again with a different query.";
+                result = "Search Agent couldn't find any results matching the search criteria. Please try with different keywords being more specific and do not repeat the same query. It is possible that the user query is incorrect.";
             }
             
             logger.warning("Returning fallback response: " + result);

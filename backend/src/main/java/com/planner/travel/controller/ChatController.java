@@ -9,7 +9,6 @@ import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.GraphStateException;
-//import org.bsc.langgraph4j.StateGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,6 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -107,11 +105,10 @@ public class ChatController {
                     messagingTemplate.convertAndSend("/topic/reply/" + sessionId, errorDto);
                 }
             }
-
         } catch (Exception e) {
             logger.error("Error processing message for session {}: {}", sessionId, e.getMessage(), e);
             ChatMessageDto errorDto = new ChatMessageDto(
-                ErrorHandler.getUserFriendlyErrorMessage(e, "Error processing chat message"),
+                ErrorHandler.getUserFriendlyErrorMessage(e, "Error processing chat message", true),
                 "AI"
             );
             messagingTemplate.convertAndSend("/topic/reply/" + sessionId, errorDto);

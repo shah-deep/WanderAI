@@ -12,12 +12,11 @@ import dev.langchain4j.model.chat.request.json.JsonSchema;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.output.JsonSchemas;
-import lombok.RequiredArgsConstructor; // If you use Lombok
+import lombok.RequiredArgsConstructor;
 import org.bsc.langgraph4j.action.NodeAction;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import jakarta.annotation.PostConstruct; // Import PostConstruct
+import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -66,8 +65,6 @@ public class SupervisorAgent implements NodeAction<ChatState> {
                 // you would configure a ChatMemoryProvider here.
                 .build();
     }
-
-
 
     @Override
     public Map<String, Object> apply(ChatState state) throws Exception {

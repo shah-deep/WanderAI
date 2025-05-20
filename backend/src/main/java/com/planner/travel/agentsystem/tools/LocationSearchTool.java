@@ -28,12 +28,26 @@ public class LocationSearchTool {
     @Value("${tripadvisor.api.key}")
     private String apiKey;
 
-    @Tool("Searches for locations like hotels, attractions, or restaurants. Category is optional. Returns a list of found locations.")
-    public List<SearchResult> searchLocation(
+    @Tool("Searches for locations with no category is mentioned. Returns a list of found locations.")
+    public List<SearchResult> searchLocationNoCategory(
+            @P("The search query") String searchQuery) {
+        return this.searchTripAdvisor(searchQuery, null);
+    }
+
+    @Tool("Searches for locations like hotels, attractions, restaurants or geos. Category is mentioned. Returns a list of found locations.")
+    public List<SearchResult> searchLocationWithCategory(
             @P("The search query") String searchQuery,
-            @P("Optional: The category of the search, such as 'hotels', 'attractions', or 'restaurants'. If not provided or null, a general search is performed based on the query.") String category) {
+            @P("The category of the search, such as 'hotels', 'attractions', 'restaurants', or 'geos'.") String category) {
+        return this.searchTripAdvisor(searchQuery, category);
+    }
+
+    public List<SearchResult>searchTripAdvisor(String searchQuery, String category) {
         try {
             // Category can be null here, assuming tripAdvisorClient.searchLocations handles it
+            if (category == null || category.isEmpty()) {
+                category="Null";
+            }
+            System.out.println("[Search Tool] searchLocation Tool got input: " + searchQuery + ", Category: " + category);
             ResponseEntity<String> response = tripAdvisorClient.searchLocations(
                     apiKey,
                     searchQuery,
@@ -48,10 +62,10 @@ public class LocationSearchTool {
 
             return parseSearchResults(response.getBody());
         } catch (Exception e) {
-    log.error("Error searching for locations with query '{}' and category '{}': {}", 
-        searchQuery, category, e.getMessage(), e);
-    return Collections.emptyList();
-}
+            log.error("Error searching for locations with query '{}' and category '{}': {}",
+                searchQuery, category, e.getMessage(), e);
+            return Collections.emptyList();
+        }
     }
 
     private List<SearchResult> parseSearchResults(String jsonResponse) {
