@@ -60,7 +60,7 @@ public class LocationSearchTool {
             JsonNode root = objectMapper.readTree(jsonResponse);
             JsonNode data = root.get("data");
 
-            if (data != null && data.isArray()) {
+            if (data != null && data.isArray() && !data.isEmpty()) {
                 for (JsonNode location : data) {
                     String locationId = location.path("location_id").asText();
                     String name = location.path("name").asText();
@@ -68,9 +68,11 @@ public class LocationSearchTool {
 
                     results.add(new SearchResult(locationId, name, address));
                 }
+            } else {
+                log.info("No results found in Search API response or empty data array");
             }
         } catch (JsonProcessingException e) {
-            log.error("Error parsing search results", e);
+            log.error("Error parsing search results: ", e);
         }
         return results;
     }
