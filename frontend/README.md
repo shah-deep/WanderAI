@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WanderAI Frontend
 
-## Getting Started
+React-based frontend for the WanderAI travel planning assistant, built with Next.js and TypeScript.
 
-First, run the development server:
+## Prerequisites
 
+- Node.js 20.x or later
+- npm/yarn package manager
+- Backend service running ([see backend README](../backend/README.md))
+
+## Configuration
+
+1. Create a `.env.local` file in the root directory with:
+```properties
+NEXT_PUBLIC_WEBSOCKET_URL=http://localhost:8080/ws-chat
+```
+
+2. For production deployment, use `wss://` instead of `ws://` for secure WebSocket connections.
+
+## Installation
+
+Install dependencies:
+```bash
+npm install
+# or
+yarn install
+```
+
+## Running the Application
+
+Development mode:
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Production build:
+```bash
+npm run build
+npm start
+# or
+yarn build
+yarn start
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The application will be available at `http://localhost:3000`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+```
+src/
+├── app/                # Next.js app directory
+├── components/         # React components
+│   ├── ChatInput      # Message input component
+│   ├── ChatMessage    # Message display component
+│   ├── ChatWindow     # Main chat interface
+│   └── ExportChat     # Chat export functionality
+├── hooks/             # Custom React hooks
+│   └── useWebSocket   # WebSocket connection management
+├── lib/              # Utility functions and constants
+└── types/            # TypeScript type definitions
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Real-time chat interface with WebSocket connection
+- Markdown support for messages
+- Chat export functionality (TEXT/JSON)
+- Responsive design with Tailwind CSS
+- TypeScript for type safety
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Development
 
-## Deploy on Vercel
+### Available Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `npm run dev`: Start development server
+- `npm run build`: Create production build
+- `npm start`: Start production server
+- `npm run lint`: Run ESLint
+- `npm run export`: Export static site
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Technology Stack
+
+- Next.js 15.x
+- React 19.x
+- TypeScript
+- Tailwind CSS
+- STOMP WebSocket client
+- React Markdown for message formatting
+
+## Building for Production
+
+1. Create production build:
+```bash
+npm run build
+```
+
+2. Export static site (if needed):
+```bash
+npm run export
+```
+
+## Environment Variables
+
+- `NEXT_PUBLIC_WEBSOCKET_URL`: WebSocket server URL
+- `NEXT_PUBLIC_BASE_PATH`: Base path for deployment (optional)
+- `NEXT_PUBLIC_USE_WSS`: Use secure WebSocket connection (optional)
