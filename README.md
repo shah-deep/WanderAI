@@ -2,6 +2,8 @@
 
 A chat-based AI travel planning assistant that helps users create personalized travel itineraries using real-time data from TripAdvisor.
 
+Please hit **star⭐** if you like this project.
+
 ## Project Description
 
 WanderAI is an intelligent travel planning web application that combines the power of Large Language Models (LLMs) with real-time TripAdvisor data to assist users in planning their trips. Through a conversational interface, users can:
