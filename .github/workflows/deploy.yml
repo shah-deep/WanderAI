@@ -54,7 +54,7 @@ jobs:
         working-directory: frontend
         env:
           NEXT_PUBLIC_BACKEND_URL: 'https://trip-planner-backend-yux0.onrender.com'
-          NEXT_PUBLIC_WEBSOCKET_URL: '${{env.NEXT_PUBLIC_BACKEND_URL}}/ws-chat'
+          NEXT_PUBLIC_WEBSOCKET_URL: '${{ env.NEXT_PUBLIC_BACKEND_URL }}/ws-chat'
           NEXT_PUBLIC_BASE_PATH: '/WanderAI'
           NEXT_PUBLIC_USE_WSS: 'true'
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
