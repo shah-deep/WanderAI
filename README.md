@@ -22,12 +22,16 @@ WanderAI is an intelligent travel planning web application that combines the pow
 - TripAdvisor API integration
 - STOMP protocol for WebSocket communication
 
+For detailed backend setup and configuration, see the [Backend README](backend/README.md).
+
 ### Frontend
 - Next.js
 - React
 - TypeScript
 - Tailwind CSS
 - WebSocket client (STOMP)
+
+For detailed frontend setup and configuration, see the [Frontend README](frontend/README.md).
 
 ## Capabilities
 
