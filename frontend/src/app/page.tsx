@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import ExportChat from '@/components/ExportChat';
+import { checkBackendHealth } from '@/lib/api';
 
 // Dynamically import the WebSocket hook with no SSR
 const ChatWithWebSocket = dynamic(
@@ -12,6 +13,13 @@ const ChatWithWebSocket = dynamic(
 
 export default function Home() {
   const [messages, setMessages] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Check backend health on page load
+    checkBackendHealth().then(isHealthy => {
+      console.log('Backend health check:', isHealthy ? 'OK' : 'Failed');
+    });
+  }, []);
 
   return (
     <main className="flex flex-col items-center h-screen w-full bg-gray-50 p-4">
