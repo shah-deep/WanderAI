@@ -32,7 +32,6 @@ public class ChatController {
     private final SimpMessagingTemplate messagingTemplate;
     private final TravelPlannerWorkflow travelPlannerWorkflow;
     private final Map<String, CompiledGraph<ChatState>> sessionGraphs = new ConcurrentHashMap<>();
-    private final Map<String, Optional<ChatState>> sessionChatStates = new ConcurrentHashMap<>();
 
 
     @Autowired
@@ -61,23 +60,8 @@ public class ChatController {
                 }
             });
 
-            Optional<ChatState> currentChatState = sessionChatStates.computeIfAbsent(sessionId, id ->
-                    Optional.of(new ChatState(Map.of("messages", Collections.emptyList())))
-            );
-
-            UserMessage userMessage = UserMessage.from(chatMessageDto.getContent());
-            ChatState updatedChatStateWithUserMessage;
-            if (currentChatState.isEmpty()) {
-                logger.warn("No chat state found for session {}", sessionId);
-                updatedChatStateWithUserMessage = new ChatState(Map.of("messages", Collections.emptyList()));
-                updatedChatStateWithUserMessage = updatedChatStateWithUserMessage.withMessage(userMessage);
-            } else {
-                updatedChatStateWithUserMessage = currentChatState.get().withMessage(userMessage);
-            }
-
             logger.info("Invoking graph for session: {} with message: {}", sessionId, chatMessageDto.getContent());
-            Optional<ChatState> resultState = graph.invoke(updatedChatStateWithUserMessage.data());
-            sessionChatStates.put(sessionId, resultState); // Store the latest state
+            Optional<ChatState> resultState = graph.invoke(Map.of( "messages", UserMessage.from(chatMessageDto.getContent())));
 
             if (resultState.isPresent() && resultState.get().lastMessage().isPresent() && 
                 (resultState.get().lastMessage().get() instanceof AiMessage aiResponse)) {
@@ -120,7 +104,6 @@ public class ChatController {
         String sessionId = event.getSessionId();
         logger.info("Session disconnected: {}", sessionId);
         sessionGraphs.remove(sessionId);
-        sessionChatStates.remove(sessionId);
         logger.info("Cleaned up resources for session: {}", sessionId);
     }
 }

@@ -75,7 +75,7 @@ public class SupervisorAgent implements NodeAction<ChatState> {
                 (history.getLast() != null ? history.getLast() : "null message"));
 
             // Get supervisor decision and instructions
-            SupervisorOutput result = service.query(history);
+            SupervisorOutput result = service.query(state);
 
             if (result == null) {
                 throw new RuntimeException("Failed to get response from supervisor");
@@ -95,7 +95,7 @@ public class SupervisorAgent implements NodeAction<ChatState> {
 
             return Map.of(
                     "next", next,
-                    "messages", state.withMessage(supervisorMessage).messages()
+                    "messages", supervisorMessage
             );
         } catch (Exception e) {
             log.error("Error in SupervisorAgent: {}", e.getMessage(), e);
@@ -105,7 +105,7 @@ public class SupervisorAgent implements NodeAction<ChatState> {
             );
             return Map.of(
                     "next", "User",
-                    "messages", state.withMessage(errorMessage).messages()
+                    "messages", errorMessage
             );
         }
     }
