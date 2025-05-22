@@ -70,12 +70,13 @@ public class SupervisorAgent implements NodeAction<ChatState> {
     public Map<String, Object> apply(ChatState state) throws Exception {
         try {
             List<ChatMessage> history = state.messages();
+//            System.out.println("Supervisor Chat History: " + history);
 
             System.out.println("SupervisorAgent got input: " +
                 (history.getLast() != null ? history.getLast() : "null message"));
 
             // Get supervisor decision and instructions
-            SupervisorOutput result = service.query(state);
+            SupervisorOutput result = service.query(history);
 
             if (result == null) {
                 throw new RuntimeException("Failed to get response from supervisor");

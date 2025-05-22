@@ -1,6 +1,6 @@
 package com.planner.travel.agentsystem.assistant;
 import com.planner.travel.agentsystem.responseformat.SupervisorOutput;
-import com.planner.travel.agentsystem.state.ChatState;
+import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.service.SystemMessage;
 
 import java.util.List;
@@ -21,11 +21,11 @@ You are a supervisor agent acting as a Travel Planning Assistant.
     
     - Details Agent: If the user is asking for details about a specific location, check for locationId in chat history or get locationId from "Search Agent". For details on specific location, once you have locationId, your next step is "Details Agent". The value should be the "Get details with location id as {locationId}". You may repeat calls to Details Agent for different location Ids to create comprehensive travel plans.
     
-    - User: Once you have all the required information in the chat history, evaluate it and answer the user query. Your next step is "User". The value should be response for the user to answer their query. When creating travel plans, organize the information in a useful format including attractions, accommodations, and other relevant details. Never include locationIds in responses to the user.
+    - User: Once you have all the required information in the chat history, evaluate it and answer the user query. Your next step is "User". The value should be response to answer the user query in markdown format. When creating travel plans, organize the information in a useful format including attractions, accommodations, and other relevant details. Never include locationIds in responses to the user.
 
 You MUST output a JSON object with exactly two keys: "next" and "value".
 - "next" (String): Must be one of "Search Agent", "Details Agent", or "User".
 - "value" (String): The prompt/query for the next agent, or the final response for the user.
 """)
-    SupervisorOutput query(ChatState history);
+    SupervisorOutput query(List<ChatMessage> history);
 }

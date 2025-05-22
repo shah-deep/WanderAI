@@ -4,6 +4,7 @@ import com.planner.travel.agentsystem.assistant.DetailsAssistant;
 import com.planner.travel.agentsystem.state.ChatState;
 import com.planner.travel.agentsystem.tools.LocationDetailsTool;
 import dev.langchain4j.data.message.AiMessage;
+import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
@@ -14,6 +15,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct; // Import PostConstruct
+
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -50,6 +53,8 @@ public class DetailsAgent implements NodeAction<ChatState> {
 
     @Override
     public Map<String, Object> apply(ChatState state) throws Exception {
+//        List<ChatMessage> history = state.messages();
+//        System.out.println("Details Agent Chat History: " + history);
         var message = state.lastMessage().orElseThrow();
 
         var text = switch( message.type() ) {

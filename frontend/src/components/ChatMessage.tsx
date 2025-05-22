@@ -19,8 +19,8 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message }) => {
     >
       <div className={`prose prose-sm dark:prose-invert max-w-none ${
         isUser
-          ? 'prose-headings:text-white prose-p:text-white prose-strong:text-white prose-code:text-white prose-li:text-white'
-          : 'prose-headings:text-gray-800 prose-p:text-gray-800 prose-strong:text-gray-800 prose-code:text-gray-800 prose-li:text-gray-800'
+          ? 'prose-headings:text-white prose-p:text-white prose-strong:text-white prose-code:text-white prose-li:text-white prose-a:text-blue-100 hover:prose-a:text-blue-100'
+          : 'prose-headings:text-gray-800 prose-p:text-gray-800 prose-strong:text-gray-800 prose-code:text-gray-800 prose-li:text-gray-800 prose-a:text-blue-600 hover:prose-a:text-blue-600'
       }`}>
         <ReactMarkdown>{message.content}</ReactMarkdown>
       </div>

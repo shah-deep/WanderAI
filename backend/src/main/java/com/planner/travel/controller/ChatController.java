@@ -9,6 +9,9 @@ import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import org.bsc.langgraph4j.CompiledGraph;
 import org.bsc.langgraph4j.GraphStateException;
+import org.bsc.langgraph4j.checkpoint.MemorySaver;
+import org.bsc.langgraph4j.CompileConfig;
+import org.bsc.langgraph4j.RunnableConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +22,6 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,8 +33,10 @@ public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final TravelPlannerWorkflow travelPlannerWorkflow;
+    
+    // Store memory savers per session
+    private final Map<String, MemorySaver> sessionMemory = new ConcurrentHashMap<>();
     private final Map<String, CompiledGraph<ChatState>> sessionGraphs = new ConcurrentHashMap<>();
-
 
     @Autowired
     public ChatController(SimpMessagingTemplate messagingTemplate, TravelPlannerWorkflow travelPlannerWorkflow) {
@@ -45,15 +49,21 @@ public class ChatController {
         String sessionId = headerAccessor.getSessionId();
         if (sessionId == null) {
             logger.error("Session ID is null, cannot process message");
-            // Optionally, send an error back to a generic error topic or handle
             return;
         }
 
         try {
+            // Get or create the memory saver for this session
+            MemorySaver memorySaver = sessionMemory.computeIfAbsent(sessionId, id -> new MemorySaver());
+            
+            // Get or create the compiled graph with memory configuration
             CompiledGraph<ChatState> graph = sessionGraphs.computeIfAbsent(sessionId, id -> {
                 try {
                     logger.info("Creating new StateGraph for session: {}", id);
-                    return travelPlannerWorkflow.createStateGraph().compile();
+                    CompileConfig compileConfig = CompileConfig.builder()
+                            .checkpointSaver(memorySaver)
+                            .build();
+                    return travelPlannerWorkflow.createStateGraph().compile(compileConfig);
                 } catch (GraphStateException e) {
                     logger.error("Error creating StateGraph for session {}: {}", id, e.getMessage(), e);
                     throw new RuntimeException("Could not create agent graph", e);
@@ -61,7 +71,17 @@ public class ChatController {
             });
 
             logger.info("Invoking graph for session: {} with message: {}", sessionId, chatMessageDto.getContent());
-            Optional<ChatState> resultState = graph.invoke(Map.of( "messages", UserMessage.from(chatMessageDto.getContent())));
+            
+            // Create runnable config with session ID as thread ID
+            RunnableConfig runnableConfig = RunnableConfig.builder()
+                    .threadId(sessionId)
+                    .build();
+            
+            // Invoke the graph with the new message and runnable config
+            Optional<ChatState> resultState = graph.invoke(
+                Map.of("messages", UserMessage.from(chatMessageDto.getContent())), 
+                runnableConfig
+            );
 
             if (resultState.isPresent() && resultState.get().lastMessage().isPresent() && 
                 (resultState.get().lastMessage().get() instanceof AiMessage aiResponse)) {
@@ -69,7 +89,6 @@ public class ChatController {
                 ChatMessageDto responseDto = new ChatMessageDto(aiResponse.text(), "AI");
                 logger.info("Sending AI response to session {}: {}", sessionId, responseDto.getContent());
             
-                // Use a simpler approach with a session-specific topic
                 messagingTemplate.convertAndSend("/topic/reply/" + sessionId, responseDto);
                 logger.info("Message Sent!");
             } else {
@@ -103,7 +122,11 @@ public class ChatController {
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         String sessionId = event.getSessionId();
         logger.info("Session disconnected: {}", sessionId);
+        
+        // Clean up both graph and memory resources
         sessionGraphs.remove(sessionId);
+        sessionMemory.remove(sessionId);
+        
         logger.info("Cleaned up resources for session: {}", sessionId);
     }
 }
