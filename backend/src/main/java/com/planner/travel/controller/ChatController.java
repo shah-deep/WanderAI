@@ -15,6 +15,7 @@ import org.bsc.langgraph4j.RunnableConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -25,6 +26,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
 @Controller
 public class ChatController {
@@ -33,87 +35,92 @@ public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final TravelPlannerWorkflow travelPlannerWorkflow;
+    private final Executor chatTaskExecutor;
     
-    // Store memory savers per session
     private final Map<String, RunnableConfig> sessionConfig = new ConcurrentHashMap<>();
     private final Map<String, CompiledGraph<ChatState>> sessionGraphs = new ConcurrentHashMap<>();
 
     @Autowired
-    public ChatController(SimpMessagingTemplate messagingTemplate, TravelPlannerWorkflow travelPlannerWorkflow) {
+    public ChatController(SimpMessagingTemplate messagingTemplate, 
+                          TravelPlannerWorkflow travelPlannerWorkflow,
+                          @Qualifier("chatTaskExecutor") Executor chatTaskExecutor) {
         this.messagingTemplate = messagingTemplate;
         this.travelPlannerWorkflow = travelPlannerWorkflow;
+        this.chatTaskExecutor = chatTaskExecutor;
     }
 
-    @MessageMapping("/chat.sendMessage")
+    @MessageMapping("/chatai")
     public void sendMessage(@Payload ChatMessageDto chatMessageDto, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
         if (sessionId == null) {
             logger.error("Session ID is null, cannot process message");
             return;
         }
-
-        try {
-            // Get or create the memory saver for this session
-            
-            // Get or create the compiled graph with memory configuration
-            CompiledGraph<ChatState> graph = sessionGraphs.computeIfAbsent(sessionId, id -> {
-                try {
-                    logger.info("Creating new StateGraph for session: {}", id);
-                    MemorySaver memorySaver = new MemorySaver();
-                    CompileConfig compileConfig = CompileConfig.builder()
-                            .checkpointSaver(memorySaver)
-                            .build();
-                    return travelPlannerWorkflow.createStateGraph().compile(compileConfig);
-                } catch (GraphStateException e) {
-                    logger.error("Error creating StateGraph for session {}: {}", id, e.getMessage(), e);
-                    throw new RuntimeException("Could not create agent graph", e);
-                }
-            });
-
-            logger.info("Invoking graph for session: {} with message: {}", sessionId, chatMessageDto.getContent());
-            
-            // Create a runnable config with session ID as thread ID
-            RunnableConfig runnableConfig = sessionConfig.computeIfAbsent(sessionId, id -> RunnableConfig.builder().threadId(id).build());
-            
-            // Invoke the graph with the new message and runnable config
-            Optional<ChatState> resultState = graph.invoke(
-                Map.of("messages", UserMessage.from(chatMessageDto.getContent())), 
-                runnableConfig
-            );
-
-            if (resultState.isPresent() && resultState.get().lastMessage().isPresent() && 
-                (resultState.get().lastMessage().get() instanceof AiMessage aiResponse)) {
-            
-                ChatMessageDto responseDto = new ChatMessageDto(aiResponse.text(), "AI");
-                logger.info("Sending AI response to session {}: {}", sessionId, responseDto.getContent());
-            
-                messagingTemplate.convertAndSend("/topic/reply/" + sessionId, responseDto);
-                logger.info("Message Sent!");
-            } else {
-                logger.warn("No AI message found in result state for session {}", sessionId);
-            
-                if (resultState.isPresent() && !resultState.get().messages().isEmpty()) {
-                    ChatMessage lastMessage = resultState.get().lastMessage().get();
-                    if (lastMessage instanceof AiMessage) {
-                        ChatMessageDto responseDto = new ChatMessageDto(((AiMessage) lastMessage).text(), "AI");
-                        messagingTemplate.convertAndSend("/topic/reply/" + sessionId, responseDto);
-                    } else {
-                        System.out.println(lastMessage);
-                        logger.warn("Last message for session {} was not an AI Message: {}", sessionId, lastMessage.type());
+        
+        chatTaskExecutor.execute(() -> {
+            try {
+                CompiledGraph<ChatState> graph = sessionGraphs.computeIfAbsent(sessionId, id -> {
+                    try {
+                        logger.info("Creating new StateGraph for session: {}", id);
+                        MemorySaver memorySaver = new MemorySaver();
+                        CompileConfig compileConfig = CompileConfig.builder()
+                                .checkpointSaver(memorySaver)
+                                .build();
+                        return travelPlannerWorkflow.createStateGraph().compile(compileConfig);
+                    } catch (GraphStateException e) {
+                        logger.error("Error creating StateGraph for session {}: {}", id, e.getMessage(), e);
+                        throw new RuntimeException("Could not create agent graph", e);
                     }
+                });
+
+                logger.info("Invoking graph for session: {} with message: {}", sessionId, chatMessageDto.getContent());
+                
+                RunnableConfig runnableConfig = sessionConfig.computeIfAbsent(sessionId, id -> 
+                    RunnableConfig.builder().threadId(id).build());
+                
+                Optional<ChatState> resultState = graph.invoke(
+                    Map.of("messages", UserMessage.from(chatMessageDto.getContent())), 
+                    runnableConfig
+                );
+                
+                if (resultState.isPresent() && resultState.get().lastMessage().isPresent() && 
+                    (resultState.get().lastMessage().get() instanceof AiMessage aiResponse)) {
+                
+                    ChatMessageDto responseDto = new ChatMessageDto(aiResponse.text(), "AI");
+                    logger.info("Sending AI response to session {}: {}", sessionId, responseDto.getContent());
+                
+                    messagingTemplate.convertAndSend("/topic/reply/" + sessionId, responseDto);
+                    logger.info("Message Sent!");
                 } else {
-                    ChatMessageDto errorDto = new ChatMessageDto("Sorry, I couldn't process that.", "AI");
-                    messagingTemplate.convertAndSend("/topic/reply/" + sessionId, errorDto);
+                    logger.warn("No AI message found in result state for session {}", sessionId);
+                
+                    if (resultState.isPresent() && !resultState.get().messages().isEmpty()) {
+                        ChatMessage lastMessage = resultState.get().lastMessage().get();
+                        if (lastMessage instanceof AiMessage) {
+                            ChatMessageDto responseDto = new ChatMessageDto(((AiMessage) lastMessage).text(), "AI");
+                            messagingTemplate.convertAndSend("/topic/reply/" + sessionId, responseDto);
+                        } else {
+                            System.out.println(lastMessage);
+                            graph.getState(runnableConfig).state().messages().remove(lastMessage);
+                            System.out.println(graph.getState(runnableConfig).state().messages());
+                            logger.warn("Last message for session {} was not an AI Message: {}", sessionId, lastMessage.type());
+                            ChatMessageDto errorDto = new ChatMessageDto("Sorry, I couldn't process that.", "AI");
+                            messagingTemplate.convertAndSend("/topic/reply/" + sessionId, errorDto);
+                        }
+                    } else {
+                        ChatMessageDto errorDto = new ChatMessageDto("Sorry, I couldn't process that.", "AI");
+                        messagingTemplate.convertAndSend("/topic/reply/" + sessionId, errorDto);
+                    }
                 }
+            } catch (Exception e) {
+                logger.error("Error processing message for session {}: {}", sessionId, e.getMessage(), e);
+                ChatMessageDto errorDto = new ChatMessageDto(
+                    ErrorHandler.getUserFriendlyErrorMessage(e, "Error processing chat message", true),
+                    "AI"
+                );
+                messagingTemplate.convertAndSend("/topic/reply/" + sessionId, errorDto);
             }
-        } catch (Exception e) {
-            logger.error("Error processing message for session {}: {}", sessionId, e.getMessage(), e);
-            ChatMessageDto errorDto = new ChatMessageDto(
-                ErrorHandler.getUserFriendlyErrorMessage(e, "Error processing chat message", true),
-                "AI"
-            );
-            messagingTemplate.convertAndSend("/topic/reply/" + sessionId, errorDto);
-        }
+        });
     }
 
     @EventListener
@@ -121,7 +128,6 @@ public class ChatController {
         String sessionId = event.getSessionId();
         logger.info("Session disconnected: {}", sessionId);
         
-        // Clean up both graph and memory resources
         sessionGraphs.remove(sessionId);
         sessionConfig.remove(sessionId);
         

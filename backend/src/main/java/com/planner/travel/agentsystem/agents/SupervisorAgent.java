@@ -100,7 +100,7 @@ public class SupervisorAgent implements NodeAction<ChatState> {
             );
         } catch (Exception e) {
             log.error("Error in SupervisorAgent: {}", e.getMessage(), e);
-            // Return a fallback response instead of allowing exception to propagate
+            // Return a fallback response instead of allowing a exception to propagate
             AiMessage errorMessage = AiMessage.from(
                 "I'm having trouble processing your request right now. Could you try again?"
             );
