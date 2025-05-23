@@ -23,9 +23,7 @@ public class LocationSearchTool {
 
     private final TripAdvisorClient tripAdvisorClient;
     private final ObjectMapper objectMapper;
-
-    @Value("${tripadvisor.api.key}")
-    private String apiKey;
+    private final String apiKey;
 
     @Tool("Searches for locations with no category is mentioned. Returns a list of found locations.")
     public List<SearchResult> searchLocationNoCategory(

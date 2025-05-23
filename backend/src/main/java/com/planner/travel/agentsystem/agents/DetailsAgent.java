@@ -3,6 +3,8 @@ package com.planner.travel.agentsystem.agents;
 import com.planner.travel.agentsystem.assistant.DetailsAssistant;
 import com.planner.travel.agentsystem.state.ChatState;
 import com.planner.travel.agentsystem.tools.LocationDetailsTool;
+import com.planner.travel.client.TripAdvisorClient;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatModel;
@@ -15,23 +17,27 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DetailsAgent implements NodeAction<ChatState> {
 
-    private final LocationDetailsTool locationDetailsTool;
     private final String llmApiKey;
     private final String llmModel;
+    private final String tripAdvisorApiKey;
+    private final TripAdvisorClient tripAdvisorClient;
     private final DetailsAssistant service;
 
-    public DetailsAgent(LocationDetailsTool locationDetailsTool, String llmApiKey, String llmModel) {
-        this.locationDetailsTool = locationDetailsTool;
+    public DetailsAgent(String llmApiKey, String llmModel, String tripAdvisorApiKey, TripAdvisorClient tripAdvisorClient) {
         this.llmApiKey = llmApiKey;
         this.llmModel = llmModel;
-        this.service = build();
+        this.tripAdvisorApiKey = tripAdvisorApiKey;
+        this.tripAdvisorClient = tripAdvisorClient;
+
+        LocationDetailsTool locationDetailsTool = new LocationDetailsTool(tripAdvisorClient, new ObjectMapper(), tripAdvisorApiKey);
+        this.service = build(locationDetailsTool);
     }
 
-    private DetailsAssistant build() {
+    private DetailsAssistant build(LocationDetailsTool locationDetailsTool) {
         ChatModel llm = GoogleAiGeminiChatModel.builder()
                 .apiKey(llmApiKey)
                 .modelName(llmModel)
-                .temperature(0.0) // Adjust as needed
+                .temperature(0.0)
                 .build();
 
         return AiServices.builder(DetailsAssistant.class)

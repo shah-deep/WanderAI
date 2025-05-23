@@ -3,11 +3,14 @@ package com.planner.travel.agentsystem.agents;
 import com.planner.travel.agentsystem.assistant.SearchAssistant;
 import com.planner.travel.agentsystem.state.ChatState;
 import com.planner.travel.agentsystem.tools.LocationSearchTool;
+import com.planner.travel.client.TripAdvisorClient;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import dev.langchain4j.service.AiServices;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.bsc.langgraph4j.action.NodeAction;
 import java.util.Map;
@@ -19,19 +22,27 @@ public class SearchAgent implements NodeAction<ChatState> {
 
     private static final Logger logger = Logger.getLogger(SearchAgent.class.getName());
 
-    private final LocationSearchTool locationSearchTool;
     private final String llmApiKey;
     private final String llmModel;
+    private final String tripAdvisorApiKey;
+    private final TripAdvisorClient tripAdvisorClient;
+
+    @Getter
     private final SearchAssistant service;
 
-    public SearchAgent(LocationSearchTool locationSearchTool, String llmApiKey, String llmModel) {
-        this.locationSearchTool = locationSearchTool;
+    public SearchAgent(String llmApiKey, String llmModel, String tripAdvisorApiKey, TripAdvisorClient tripAdvisorClient) {
         this.llmApiKey = llmApiKey;
         this.llmModel = llmModel;
-        this.service = build();
+        this.tripAdvisorApiKey = tripAdvisorApiKey;
+        this.tripAdvisorClient = tripAdvisorClient;
+        
+        // Create a new instance of the tool for this agent
+        LocationSearchTool locationSearchTool = new LocationSearchTool(tripAdvisorClient, new ObjectMapper(), tripAdvisorApiKey);
+        // Create the assistant with the tool
+        this.service = build(locationSearchTool);
     }
 
-    private SearchAssistant build() {
+    private SearchAssistant build(LocationSearchTool locationSearchTool) {
         ChatModel llm = GoogleAiGeminiChatModel.builder()
                 .apiKey(llmApiKey)
                 .modelName(llmModel)

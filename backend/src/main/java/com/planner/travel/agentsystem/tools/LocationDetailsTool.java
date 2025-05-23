@@ -7,12 +7,11 @@ import com.planner.travel.agentsystem.state.LocationDetails;
 import com.planner.travel.client.TripAdvisorClient;
 import com.planner.travel.util.ErrorHandler;
 import dev.langchain4j.agent.tool.P;
-import dev.langchain4j.agent.tool.Tool; // Added import for @Tool
+import dev.langchain4j.agent.tool.Tool;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,9 +24,7 @@ public class LocationDetailsTool {
 
     private final TripAdvisorClient tripAdvisorClient;
     private final ObjectMapper objectMapper;
-
-    @Value("${tripadvisor.api.key}")
-    private String apiKey;
+    private final String apiKey;
 
     @Tool("Gets detailed information for a specific location using its unique locationId. Returns comprehensive details about the location.")
     public LocationDetails getLocationDetails(
