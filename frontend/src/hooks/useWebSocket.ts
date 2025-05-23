@@ -29,10 +29,13 @@ export const useWebSocket = (serverUrl: string): UseWebSocketReturn => {
 
   // Initialize the STOMP client
   useEffect(() => {
+    // console.log('WebSocket useEffect triggered, serverUrl:', serverUrl);
     // Only run in browser environment
     if (typeof window === 'undefined') return;
-
+    
     const initializeClient = () => {
+      // Avoid reconnecting if already connecting
+      if (connecting || connected) return;
       setConnecting(true);
       
       // Determine if we should use secure WebSocket
@@ -58,8 +61,6 @@ export const useWebSocket = (serverUrl: string): UseWebSocketReturn => {
           console.log('Connected to STOMP server');
           setConnected(true);
           setConnecting(false);
-          
-          // console.log(socket);
           
 
           // Extract session ID from the socket URL (format: ws://host/ws-chat/470/yzw5r3mp/websocket)

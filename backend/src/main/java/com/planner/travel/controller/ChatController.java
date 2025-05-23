@@ -56,6 +56,7 @@ public class ChatController {
             logger.error("Session ID is null, cannot process message");
             return;
         }
+        // logger.info("Received message for session: {} with content: {}", sessionId, chatMessageDto.getContent());
         
         chatTaskExecutor.execute(() -> {
             try {

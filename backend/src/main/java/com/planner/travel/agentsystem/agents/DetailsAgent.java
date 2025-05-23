@@ -19,15 +19,11 @@ public class DetailsAgent implements NodeAction<ChatState> {
 
     private final String llmApiKey;
     private final String llmModel;
-    private final String tripAdvisorApiKey;
-    private final TripAdvisorClient tripAdvisorClient;
     private final DetailsAssistant service;
 
     public DetailsAgent(String llmApiKey, String llmModel, String tripAdvisorApiKey, TripAdvisorClient tripAdvisorClient) {
         this.llmApiKey = llmApiKey;
         this.llmModel = llmModel;
-        this.tripAdvisorApiKey = tripAdvisorApiKey;
-        this.tripAdvisorClient = tripAdvisorClient;
 
         LocationDetailsTool locationDetailsTool = new LocationDetailsTool(tripAdvisorClient, new ObjectMapper(), tripAdvisorApiKey);
         this.service = build(locationDetailsTool);
