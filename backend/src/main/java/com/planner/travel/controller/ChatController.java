@@ -35,7 +35,7 @@ public class ChatController {
     private final TravelPlannerWorkflow travelPlannerWorkflow;
     
     // Store memory savers per session
-    private final Map<String, MemorySaver> sessionMemory = new ConcurrentHashMap<>();
+    private final Map<String, RunnableConfig> sessionConfig = new ConcurrentHashMap<>();
     private final Map<String, CompiledGraph<ChatState>> sessionGraphs = new ConcurrentHashMap<>();
 
     @Autowired
@@ -54,12 +54,12 @@ public class ChatController {
 
         try {
             // Get or create the memory saver for this session
-            MemorySaver memorySaver = sessionMemory.computeIfAbsent(sessionId, id -> new MemorySaver());
             
             // Get or create the compiled graph with memory configuration
             CompiledGraph<ChatState> graph = sessionGraphs.computeIfAbsent(sessionId, id -> {
                 try {
                     logger.info("Creating new StateGraph for session: {}", id);
+                    MemorySaver memorySaver = new MemorySaver();
                     CompileConfig compileConfig = CompileConfig.builder()
                             .checkpointSaver(memorySaver)
                             .build();
@@ -72,10 +72,8 @@ public class ChatController {
 
             logger.info("Invoking graph for session: {} with message: {}", sessionId, chatMessageDto.getContent());
             
-            // Create runnable config with session ID as thread ID
-            RunnableConfig runnableConfig = RunnableConfig.builder()
-                    .threadId(sessionId)
-                    .build();
+            // Create a runnable config with session ID as thread ID
+            RunnableConfig runnableConfig = sessionConfig.computeIfAbsent(sessionId, id -> RunnableConfig.builder().threadId(id).build());
             
             // Invoke the graph with the new message and runnable config
             Optional<ChatState> resultState = graph.invoke(
@@ -125,7 +123,7 @@ public class ChatController {
         
         // Clean up both graph and memory resources
         sessionGraphs.remove(sessionId);
-        sessionMemory.remove(sessionId);
+        sessionConfig.remove(sessionId);
         
         logger.info("Cleaned up resources for session: {}", sessionId);
     }

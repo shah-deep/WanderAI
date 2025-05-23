@@ -12,3 +12,9 @@ body {
   color: rgb(var(--foreground-rgb));
   background: white;
 }
+
+@layer utilities {
+  .overflow-wrap-anywhere {
+    overflow-wrap: anywhere;
+  }
+}

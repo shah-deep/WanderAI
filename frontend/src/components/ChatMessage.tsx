@@ -11,7 +11,7 @@ const ChatMessageComponent: React.FC<ChatMessageProps> = ({ message }) => {
   
   return (
     <div 
-      className={`mb-4 p-3 rounded-lg max-w-[80%] ${
+      className={`mb-4 p-3 rounded-lg max-w-[80%] overflow-wrap-anywhere ${
         isUser 
           ? 'ml-auto bg-blue-500 text-white rounded-br-none' 
           : 'mr-auto bg-gray-200 text-gray-800 rounded-bl-none'
