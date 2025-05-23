@@ -2,6 +2,8 @@ package com.planner.travel.agentsystem.assistant;
 import com.planner.travel.agentsystem.responseformat.SupervisorOutput;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.service.SystemMessage;
+import dev.langchain4j.service.UserMessage;
+import dev.langchain4j.service.V;
 
 import java.util.List;
 
@@ -26,6 +28,10 @@ You are a supervisor agent acting as a Travel Planning Assistant.
 You MUST output a JSON object with exactly two keys: "next" and "value".
 - "next" (String): Must be one of "Search Agent", "Details Agent", or "User".
 - "value" (String): The prompt/query for the next agent, or the final response for the user.
+
+
+The following is the previous chat history:
+{{history}}
 """)
-    SupervisorOutput query(List<ChatMessage> history);
+    SupervisorOutput query(@V("history") List<ChatMessage> history, @UserMessage List<ChatMessage> currentMessages);
 }

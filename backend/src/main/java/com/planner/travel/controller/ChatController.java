@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.event.EventListener;
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -78,9 +79,15 @@ public class ChatController {
                 
                 RunnableConfig runnableConfig = sessionConfig.computeIfAbsent(sessionId, id -> 
                     RunnableConfig.builder().threadId(id).build());
-                
+                int lastestQueryIndex = 0;
+                try {
+                    lastestQueryIndex = graph.getState(runnableConfig).state().messages().size();
+                } catch (IllegalStateException e) {
+                    logger.info("First query");
+                }
                 Optional<ChatState> resultState = graph.invoke(
-                    Map.of("messages", UserMessage.from(chatMessageDto.getContent())), 
+                    Map.of( "lastestQueryIndex", lastestQueryIndex,
+                            "messages", UserMessage.from(chatMessageDto.getContent())),
                     runnableConfig
                 );
                 

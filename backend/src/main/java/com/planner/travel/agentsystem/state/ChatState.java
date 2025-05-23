@@ -10,6 +10,10 @@ public class ChatState extends MessagesState<ChatMessage> {
         return this.value("next");
     }
 
+    public Optional<Integer> lastestQueryIndex() {
+        return this.value("lastestQueryIndex");
+    }
+
     public ChatState(Map<String, Object> initData) {
         super(initData);
     }
