@@ -82,7 +82,7 @@ export const useWebSocket = (serverUrl: string): UseWebSocketReturn => {
           if (extractedSessionId) {
             // Subscribe to session-specific topic
             const sub = newClient.subscribe(`/topic/reply/${extractedSessionId}`, (message) => {
-              console.log('Received message:', message.body);
+              // console.log('Received message:', message.body);
               const parsedMessage = JSON.parse(message.body);
               setMessages(prev => [...prev, parsedMessage]);
               setAwaitingResponse(false); // Message received, no longer awaiting
