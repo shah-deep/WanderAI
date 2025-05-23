@@ -1,5 +1,6 @@
 package com.planner.travel.agentsystem;
 
+import com.planner.travel.agentsystem.agents.AgentFactory;
 import com.planner.travel.agentsystem.agents.DetailsAgent;
 import com.planner.travel.agentsystem.agents.SearchAgent;
 import com.planner.travel.agentsystem.agents.SupervisorAgent;
@@ -20,13 +21,13 @@ import static org.bsc.langgraph4j.action.AsyncNodeAction.node_async;
 @RequiredArgsConstructor
 @Component
 public class TravelPlannerWorkflow {
-
-    final SupervisorAgent supervisorAgent;
-    final SearchAgent searchAgent;
-    final DetailsAgent detailsAgent;
-
+    private final AgentFactory agentFactory;
+    
     public StateGraph<ChatState> createStateGraph() throws GraphStateException {
-        // Define the StateGraph with ChatState and its serializer
+        SupervisorAgent supervisorAgent = agentFactory.createSupervisorAgent();
+        SearchAgent searchAgent = agentFactory.createSearchAgent();
+        DetailsAgent detailsAgent = agentFactory.createDetailsAgent();
+        
         StateGraph<ChatState> workflow;
         workflow = new StateGraph<>(ChatState.SCHEMA, new StateSerializer())
             .addNode("supervisor", node_async(supervisorAgent))
@@ -54,7 +55,7 @@ public class TravelPlannerWorkflow {
             // After the SearchAgent or DetailsAgent finishes, route back to the supervisor
             .addEdge("search_agent", "supervisor")
             .addEdge("details_agent", "supervisor");
-
+        
         return workflow;
     }
 }

@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
 public class LocationSearchTool {

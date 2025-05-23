@@ -132,7 +132,7 @@ export const useWebSocket = (serverUrl: string): UseWebSocketReturn => {
       };
       
       client.publish({
-        destination: '/app/chat.sendMessage',
+        destination: '/app/chatai',
         body: JSON.stringify(chatMessage)
       });
       

@@ -4,45 +4,34 @@ import com.planner.travel.agentsystem.assistant.SearchAssistant;
 import com.planner.travel.agentsystem.state.ChatState;
 import com.planner.travel.agentsystem.tools.LocationSearchTool;
 import dev.langchain4j.data.message.AiMessage;
-import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import dev.langchain4j.service.AiServices;
 import lombok.RequiredArgsConstructor;
 import org.bsc.langgraph4j.action.NodeAction;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import jakarta.annotation.PostConstruct;
-
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-
-@Service
 @RequiredArgsConstructor
 public class SearchAgent implements NodeAction<ChatState> {
 
-    private final LocationSearchTool locationSearchTool;
     private static final Logger logger = Logger.getLogger(SearchAgent.class.getName());
 
-    @Value("${llm.api-key.gemini}")
-    private String llmApiKey;
+    private final LocationSearchTool locationSearchTool;
+    private final String llmApiKey;
+    private final String llmModel;
+    private final SearchAssistant service;
 
-    @Value("${llm.model-name.gemini}")
-    private String llmModel;
-
-    private SearchAssistant service;
-
-    @PostConstruct
-    public void init() {
+    public SearchAgent(LocationSearchTool locationSearchTool, String llmApiKey, String llmModel) {
+        this.locationSearchTool = locationSearchTool;
+        this.llmApiKey = llmApiKey;
+        this.llmModel = llmModel;
         this.service = build();
     }
 
-    SearchAssistant build() {
+    private SearchAssistant build() {
         ChatModel llm = GoogleAiGeminiChatModel.builder()
                 .apiKey(llmApiKey)
                 .modelName(llmModel)
@@ -50,15 +39,13 @@ public class SearchAgent implements NodeAction<ChatState> {
                 .build();
 
         return AiServices.builder(SearchAssistant.class)
-                        .chatModel(llm)
-                        .tools(locationSearchTool)
-                        .build();
+                .chatModel(llm)
+                .tools(locationSearchTool)
+                .build();
     }
 
     @Override
     public Map<String, Object> apply(ChatState state) throws Exception {
-//        List<ChatMessage> history = state.messages();
-//        System.out.println("Search Agent Chat History: " + history);
         var message = state.lastMessage().orElseThrow();
 
         var text = switch(message.type()) {

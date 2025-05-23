@@ -14,32 +14,25 @@ import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.output.JsonSchemas;
 import lombok.RequiredArgsConstructor;
 import org.bsc.langgraph4j.action.NodeAction;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
 public class SupervisorAgent implements NodeAction<ChatState> {
 
-    @Value("${llm.api-key.gemini}")
-    private String llmApiKey;
+    private final String llmApiKey;
+    private final String llmModel;
+    private final SupervisorAssistant service;
 
-    @Value( "${llm.model-name.gemini}")
-    private String llmModel;
-
-    private SupervisorAssistant service;
-
-    @PostConstruct
-    public void init() {
+    public SupervisorAgent(String llmApiKey, String llmModel) {
+        this.llmApiKey = llmApiKey;
+        this.llmModel = llmModel;
         this.service = buildSupervisorAssistant();
     }
 
-    public SupervisorAssistant buildSupervisorAssistant() {
+    private SupervisorAssistant buildSupervisorAssistant() {
         // 1. Generate JsonSchema from your SupervisorOutput class
         JsonSchema supervisorOutputSchema = JsonSchemas.jsonSchemaFrom(SupervisorOutput.class)
                 .orElseThrow(() -> new RuntimeException("Failed to create JSON schema from SupervisorOutput class. Ensure SupervisorOutput has a public no-arg constructor and getters/setters if needed by the schema generator."));
@@ -53,7 +46,7 @@ public class SupervisorAgent implements NodeAction<ChatState> {
         // 3. Configure the ChatModel (Gemini)
         ChatModel llm = GoogleAiGeminiChatModel.builder()
                 .apiKey(llmApiKey)
-                .modelName(llmModel) // Or your preferred Gemini response format
+                .modelName(llmModel)
                 .temperature(0.0) // Lower temperature for more deterministic routing
                 .responseFormat(responseFormat) // Crucial step to enforce structured output
                 .build();
@@ -61,8 +54,6 @@ public class SupervisorAgent implements NodeAction<ChatState> {
         // 4. Build the AiService for the SupervisorAssistant
         return AiServices.builder(SupervisorAssistant.class)
                 .chatModel(llm)
-                // If the supervisor needs access to chat history to make decisions,
-                // you would configure a ChatMemoryProvider here.
                 .build();
     }
 
