@@ -44,7 +44,7 @@ public class LocationSearchTool {
             if (category == null || category.isEmpty()) {
                 category="Null";
             }
-            System.out.println("[Search Tool] searchLocation Tool got input: " + searchQuery + ", Category: " + category);
+            // System.out.println("[Search Tool] searchLocation Tool got input: " + searchQuery + ", Category: " + category);
             ResponseEntity<String> response = tripAdvisorClient.searchLocations(
                     apiKey,
                     searchQuery,

@@ -61,11 +61,10 @@ public class SupervisorAgent implements NodeAction<ChatState> {
     public Map<String, Object> apply(ChatState state) throws Exception {
         try {
             List<ChatMessage> history = state.messages();
-//            System.out.println("Supervisor Chat History: " + history);
+            // System.out.println("Supervisor Chat History: " + history);
             int lastestQueryIndex = state.lastestQueryIndex().isEmpty() ? 0 : state.lastestQueryIndex().get();
 
-            System.out.println("SupervisorAgent got input: " +
-                (history.getLast() != null ? history.getLast() : "null message"));
+            // System.out.println("SupervisorAgent got input: " + (history.getLast() != null ? history.getLast() : "null message"));
 
             List<ChatMessage> previousHistory = history.subList(0, lastestQueryIndex);
             List<ChatMessage> currentMessages = history.subList(lastestQueryIndex, history.size());
@@ -77,7 +76,7 @@ public class SupervisorAgent implements NodeAction<ChatState> {
                 throw new RuntimeException("Failed to get response from supervisor");
             }
 
-            System.out.println("SupervisorAgent got output: " + result);
+            // System.out.println("SupervisorAgent got output: " + result);
 
             // Create a message from supervisor's instructions
             String supervisorValue = result.getValue();

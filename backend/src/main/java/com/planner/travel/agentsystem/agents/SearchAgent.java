@@ -58,7 +58,7 @@ public class SearchAgent implements NodeAction<ChatState> {
             default -> throw new IllegalStateException("unexpected message type: " + message.type());
         };
 
-        System.out.println("SearchAgent got input: " + text);
+        // System.out.println("SearchAgent got input: " + text);
 
         String result;
         try {
@@ -66,7 +66,7 @@ public class SearchAgent implements NodeAction<ChatState> {
             if (result == null || result.isEmpty()) {
                 throw new Exception("Failed to get response from search assistant");
             }
-            System.out.println("SearchAgent got output: " + result);
+            // System.out.println("SearchAgent got output: " + result);
         } catch (Exception e) {
             logger.warning("Error occurred during search: " + e.getMessage());
             
@@ -76,7 +76,7 @@ public class SearchAgent implements NodeAction<ChatState> {
                 result = "Search Agent couldn't find any results matching the search criteria. Please try with different keywords being more specific and do not repeat the same query. It is possible that the user query is incorrect.";
             }
             
-            logger.warning("Returning fallback response: " + result);
+            // logger.warning("Returning fallback response: " + result);
         }
 
         return Map.of("messages", AiMessage.from(result));

@@ -52,11 +52,11 @@ public class DetailsAgent implements NodeAction<ChatState> {
             default -> throw new IllegalStateException("unexpected message type: " + message.type());
         };
 
-        System.out.println("DetailsAgent got input: " + text);
+        // System.out.println("DetailsAgent got input: " + text);
 
         var result = service.chat(text);
 
-        System.out.println("DetailsAgent got output: " + result);
+        // System.out.println("DetailsAgent got output: " + result);
 
         return Map.of("messages", AiMessage.from(result));
     }

@@ -63,7 +63,7 @@ public class ChatController {
             try {
                 CompiledGraph<ChatState> graph = sessionGraphs.computeIfAbsent(sessionId, id -> {
                     try {
-                        logger.info("Creating new StateGraph for session: {}", id);
+                        // logger.info("Creating new StateGraph for session: {}", id);
                         MemorySaver memorySaver = new MemorySaver();
                         CompileConfig compileConfig = CompileConfig.builder()
                                 .checkpointSaver(memorySaver)
@@ -75,7 +75,7 @@ public class ChatController {
                     }
                 });
 
-                logger.info("Invoking graph for session: {} with message: {}", sessionId, chatMessageDto.getContent());
+                // logger.info("Invoking graph for session: {} with message: {}", sessionId, chatMessageDto.getContent());
                 
                 RunnableConfig runnableConfig = sessionConfig.computeIfAbsent(sessionId, id -> 
                     RunnableConfig.builder().threadId(id).build());
@@ -83,7 +83,7 @@ public class ChatController {
                 try {
                     lastestQueryIndex = graph.getState(runnableConfig).state().messages().size();
                 } catch (IllegalStateException e) {
-                    logger.info("First query");
+                    logger.info("First query for session {}", sessionId);
                 }
                 Optional<ChatState> resultState = graph.invoke(
                     Map.of( "lastestQueryIndex", lastestQueryIndex,
@@ -95,12 +95,12 @@ public class ChatController {
                     (resultState.get().lastMessage().get() instanceof AiMessage aiResponse)) {
                 
                     ChatMessageDto responseDto = new ChatMessageDto(aiResponse.text(), "AI");
-                    logger.info("Sending AI response to session {}: {}", sessionId, responseDto.getContent());
+                    // logger.info("Sending AI response to session {}: {}", sessionId, responseDto.getContent());
                 
                     messagingTemplate.convertAndSend("/topic/reply/" + sessionId, responseDto);
-                    logger.info("Message Sent!");
+                    // logger.info("Message Sent!");
                 } else {
-                    logger.warn("No AI message found in result state for session {}", sessionId);
+                    // logger.warn("No AI message found in result state for session {}", sessionId);
                 
                     if (resultState.isPresent() && !resultState.get().messages().isEmpty()) {
                         ChatMessage lastMessage = resultState.get().lastMessage().get();
@@ -108,9 +108,9 @@ public class ChatController {
                             ChatMessageDto responseDto = new ChatMessageDto(((AiMessage) lastMessage).text(), "AI");
                             messagingTemplate.convertAndSend("/topic/reply/" + sessionId, responseDto);
                         } else {
-                            System.out.println(lastMessage);
+                            // System.out.println(lastMessage);
                             graph.getState(runnableConfig).state().messages().remove(lastMessage);
-                            System.out.println(graph.getState(runnableConfig).state().messages());
+                            // System.out.println(graph.getState(runnableConfig).state().messages());
                             logger.warn("Last message for session {} was not an AI Message: {}", sessionId, lastMessage.type());
                             ChatMessageDto errorDto = new ChatMessageDto("Sorry, I couldn't process that.", "AI");
                             messagingTemplate.convertAndSend("/topic/reply/" + sessionId, errorDto);
@@ -134,11 +134,11 @@ public class ChatController {
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         String sessionId = event.getSessionId();
-        logger.info("Session disconnected: {}", sessionId);
+        // logger.info("Session disconnected: {}", sessionId);
         
         sessionGraphs.remove(sessionId);
         sessionConfig.remove(sessionId);
         
-        logger.info("Cleaned up resources for session: {}", sessionId);
+        logger.info("Session disconnected & Cleaned up resources for session: {}", sessionId);
     }
 }
