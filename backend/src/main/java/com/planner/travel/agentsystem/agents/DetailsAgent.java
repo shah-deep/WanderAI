@@ -13,9 +13,13 @@ import dev.langchain4j.service.AiServices;
 import lombok.RequiredArgsConstructor;
 import org.bsc.langgraph4j.action.NodeAction;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
 
 @RequiredArgsConstructor
 public class DetailsAgent implements NodeAction<ChatState> {
+
+    private static final Logger logger = Logger.getLogger(DetailsAgent.class.getName());
 
     private final String llmApiKey;
     private final String llmModel;
@@ -44,19 +48,34 @@ public class DetailsAgent implements NodeAction<ChatState> {
 
     @Override
     public Map<String, Object> apply(ChatState state) throws Exception {
-        var message = state.lastMessage().orElseThrow();
+        String result;
+        try {
+            var message = state.lastMessage().orElseThrow();
 
-        var text = switch(message.type()) {
-            case USER -> ((UserMessage)message).singleText();
-            case AI -> ((AiMessage)message).text();
-            default -> throw new IllegalStateException("unexpected message type: " + message.type());
-        };
+            var text = switch(message.type()) {
+                case USER -> ((UserMessage)message).singleText();
+                case AI -> ((AiMessage)message).text();
+                default -> throw new IllegalStateException("unexpected message type: " + message.type());
+            };
 
-        // System.out.println("DetailsAgent got input: " + text);
+             // System.out.println("DetailsAgent got input: " + text);
 
-        var result = service.chat(text);
-
-        // System.out.println("DetailsAgent got output: " + result);
+            result = service.chat(text);
+            if (result == null || result.isEmpty()) {
+                throw new Exception("Failed to get response from details assistant");
+            }
+             // System.out.println("DetailsAgent got output: " + result);
+        } catch (Exception e) {
+            logger.warning("Error occurred during location details retrieval: " + e.getMessage());
+            
+            if (e instanceof TimeoutException) {
+                result = "I'm sorry, but the location details request timed out. Please try again or refine your query.";
+            } else {
+                result = "Details Agent couldn't retrieve the requested location information. Please try with different parameters or check if the location exists.";
+            }
+            
+            // logger.warning("Returning fallback response: " + result);
+        }
 
         return Map.of("messages", AiMessage.from(result));
     }

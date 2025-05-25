@@ -108,10 +108,11 @@ public class ChatController {
                             ChatMessageDto responseDto = new ChatMessageDto(((AiMessage) lastMessage).text(), "AI");
                             messagingTemplate.convertAndSend("/topic/reply/" + sessionId, responseDto);
                         } else {
+                            logger.warn("Last message for session {} was not an AI Message: {}", sessionId, lastMessage.type());
+
                             // System.out.println(lastMessage);
                             graph.getState(runnableConfig).state().messages().remove(lastMessage);
-                            // System.out.println(graph.getState(runnableConfig).state().messages());
-                            logger.warn("Last message for session {} was not an AI Message: {}", sessionId, lastMessage.type());
+                            // System.out.println("Messages after removing the previous: "+graph.getState(runnableConfig).state().messages());
                             ChatMessageDto errorDto = new ChatMessageDto("Sorry, I couldn't process that.", "AI");
                             messagingTemplate.convertAndSend("/topic/reply/" + sessionId, errorDto);
                         }

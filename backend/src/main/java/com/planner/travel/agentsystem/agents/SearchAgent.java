@@ -50,26 +50,26 @@ public class SearchAgent implements NodeAction<ChatState> {
 
     @Override
     public Map<String, Object> apply(ChatState state) throws Exception {
-        var message = state.lastMessage().orElseThrow();
-
-        var text = switch(message.type()) {
-            case USER -> ((UserMessage)message).singleText();
-            case AI -> ((AiMessage)message).text();
-            default -> throw new IllegalStateException("unexpected message type: " + message.type());
-        };
-
-        // System.out.println("SearchAgent got input: " + text);
-
         String result;
         try {
+            var message = state.lastMessage().orElseThrow();
+
+            var text = switch (message.type()) {
+                case USER -> ((UserMessage) message).singleText();
+                case AI -> ((AiMessage) message).text();
+                default -> throw new IllegalStateException("unexpected message type: " + message.type());
+            };
+
+             // System.out.println("SearchAgent got input: " + text);
+
             result = service.chat(text);
             if (result == null || result.isEmpty()) {
                 throw new Exception("Failed to get response from search assistant");
             }
-            // System.out.println("SearchAgent got output: " + result);
+             // System.out.println("SearchAgent got output: " + result);
         } catch (Exception e) {
             logger.warning("Error occurred during search: " + e.getMessage());
-            
+
             if (e instanceof TimeoutException) {
                 result = "I'm sorry, but the search operation timed out. Please try again or refine your search query.";
             } else {
