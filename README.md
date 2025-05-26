@@ -2,6 +2,10 @@
 
 A chat-based AI travel planning assistant that helps users create personalized travel itineraries using real-time data from TripAdvisor.
 
+
+Try it to plan your next trip: [shahdeep.me/WanderAI](https://shahdeep.me/WanderAI/)
+
+
 Please hit **star⭐** if you like this project.
 
 ## Project Description
